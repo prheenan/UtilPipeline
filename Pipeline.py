@@ -15,9 +15,12 @@ from .UtilGeneral import GenUtilities
 @unique
 class Step(Enum):
     READ = 0
-    CORRECTED = 1
-    SANITIZED = 2
-    REDUCED = 3
+    FILTERED = 1
+    CORRECTED = 2
+    MANUAL = 3
+    SANITIZED = 4
+    ALIGNED = 5
+    REDUCED = 6
 
 def default_parser(default_dir):
     parser = argparse.ArgumentParser(description="Part of pipeline")
