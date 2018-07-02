@@ -30,7 +30,7 @@ def plot_single_fec(d,f_x,xlim,ylim,markevery=1,**kw):
     PlotUtilities.lazyLabel("Extension (nm)", "$F$ (pN)", "")
 
 def plot_data(base_dir,step,data,markevery=1,f_x = lambda x: x.Separation,
-              xlim=None):
+              xlim=None,extra_name=""):
     """
     :param base_dir: where the data live
     :param step:  what step we are on
@@ -49,7 +49,8 @@ def plot_data(base_dir,step,data,markevery=1,f_x = lambda x: x.Separation,
     for d in data:
         f = PlotUtilities.figure()
         plot_single_fec(d, f_x, xlim, ylim,markevery=markevery)
-        PlotUtilities.savefig(f, plot_subdir + name_func(0, d) + ".png")
+        out_name =   plot_subdir + name_func(0, d) +  extra_name + ".png"
+        PlotUtilities.savefig(f,out_name)
 
 
 
