@@ -22,15 +22,18 @@ def nm_and_pN_limits(data,f_x):
     ylim = 1e12 * np.array([np.min(y_range), np.max(y_range)])
     return xlim,ylim
 
-def plot_single_fec(d,f_x,xlim,ylim,markevery=1,**kw):
-    FEC_Plot._fec_base_plot(f_x(d)[::markevery] * 1e9,
-                            d.Force[::markevery] * 1e12,**kw)
+def plot_single_fec(d,f_x,xlim,ylim,i,markevery=1,callback=None,**kw):
+    x = f_x(d)[::markevery] * 1e9
+    f = d.Force[::markevery] * 1e12
+    FEC_Plot._fec_base_plot(x,f,**kw)
     plt.xlim(xlim)
     plt.ylim(ylim)
+    if callback is not None:
+        callback(i,x,f,d)
     PlotUtilities.lazyLabel("Extension (nm)", "$F$ (pN)", "")
 
 def plot_data(base_dir,step,data,markevery=1,f_x = lambda x: x.Separation,
-              xlim=None,extra_name=""):
+              xlim=None,extra_name="",**kw):
     """
     :param base_dir: where the data live
     :param step:  what step we are on
@@ -46,9 +49,9 @@ def plot_data(base_dir,step,data,markevery=1,f_x = lambda x: x.Separation,
         xlim = xlim
     else:
         xlim = xlim_tmp
-    for d in data:
+    for i,d in enumerate(data):
         f = PlotUtilities.figure()
-        plot_single_fec(d, f_x, xlim, ylim,markevery=markevery)
+        plot_single_fec(d, f_x, xlim, ylim,markevery=markevery,i=i,**kw)
         out_name =   plot_subdir + name_func(0, d) +  extra_name + ".png"
         PlotUtilities.savefig(f,out_name)
 
