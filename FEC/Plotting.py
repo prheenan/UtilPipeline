@@ -13,7 +13,7 @@ from ..UtilGeneral import PlotUtilities
 from ..UtilForce.FEC import FEC_Util, FEC_Plot
 from .. import Pipeline
 
-from ..Pipeline import Step
+from ..Pipeline import Step, _plot_subdir
 
 def nm_and_pN_limits(data,f_x):
     x_range = [[min(f_x(d)), max(f_x(d))] for d in data]
