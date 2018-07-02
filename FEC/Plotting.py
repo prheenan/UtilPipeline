@@ -31,7 +31,7 @@ def plot_single_fec(d,f_x,xlim,ylim,markevery=1,**kw):
     PlotUtilities.lazyLabel("Extension (nm)", "$F$ (pN)", "")
 
 def plot_data(base_dir,step,data,markevery=1,f_x = lambda x: x.Separation,
-              xlim=[-20,175]):
+              xlim=None):
     """
     :param base_dir: where the data live
     :param step:  what step we are on
@@ -54,7 +54,7 @@ def plot_data(base_dir,step,data,markevery=1,f_x = lambda x: x.Separation,
 
 
 
-def heatmap_ensemble_plot(data,out_name,xlim=[-50, 150],kw_map=dict(),f_x=None):
+def heatmap_ensemble_plot(data,out_name,xlim=None,kw_map=dict(),f_x=None):
     """
     makes a heatmap of the ensemble, with the actual data beneath
 
@@ -65,6 +65,9 @@ def heatmap_ensemble_plot(data,out_name,xlim=[-50, 150],kw_map=dict(),f_x=None):
     if f_x is None:
         f_x = lambda x: x.Separation
     fig = PlotUtilities.figure(figsize=(3, 5))
+    xlim_tmp , ylim = nm_and_pN_limits(data,f_x)
+    if xlim is None:
+        xlim = xlim_tmp
     ax = plt.subplot(2, 1, 1)
     FEC_Plot.heat_map_fec(data, num_bins=(200, 100),
                           use_colorbar=False,separation_max=xlim[1],**kw_map)
