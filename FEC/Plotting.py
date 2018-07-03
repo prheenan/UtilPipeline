@@ -57,7 +57,8 @@ def plot_data(base_dir,step,data,markevery=1,f_x = lambda x: x.Separation,
 
 
 
-def heatmap_ensemble_plot(data,out_name,xlim=None,kw_map=dict(),f_x=None):
+def heatmap_ensemble_plot(data,out_name,xlim=None,kw_map=dict(),f_x=None,
+                          xlabel="Extension (nm)"):
     """
     makes a heatmap of the ensemble, with the actual data beneath
 
@@ -72,7 +73,7 @@ def heatmap_ensemble_plot(data,out_name,xlim=None,kw_map=dict(),f_x=None):
     if xlim is None:
         xlim = xlim_tmp
     ax = plt.subplot(2, 1, 1)
-    FEC_Plot.heat_map_fec(data, num_bins=(200, 100),
+    FEC_Plot.heat_map_fec(data, num_bins=(200, 100),x_func=f_x,
                           use_colorbar=False,separation_max=xlim[1],**kw_map)
     for spine_name in ["bottom", "top"]:
         PlotUtilities.color_axis_ticks(color='w', spine_name=spine_name,
@@ -86,6 +87,6 @@ def heatmap_ensemble_plot(data,out_name,xlim=None,kw_map=dict(),f_x=None):
         x, f = f_x(d) * 1e9, d.Force * 1e12
         FEC_Plot._fec_base_plot(x, f, style_data=dict(color=None, alpha=0.3,
                                                       linewidth=0.5))
-    PlotUtilities.lazyLabel("Extension (nm)", "Force (pN)", "")
+    PlotUtilities.lazyLabel(xlabel, "Force (pN)", "")
     plt.xlim(xlim)
     PlotUtilities.savefig(fig, out_name)
