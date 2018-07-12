@@ -25,14 +25,14 @@ class Step(Enum):
     REDUCED = 8
     POLISH = 9
 
-def default_parser(default_dir):
+def default_parser(default_dir=""):
     parser = argparse.ArgumentParser(description="Part of pipeline")
     parser.add_argument('--base', type=str, metavar='base',
                         help="Where data base directory lives",
                         default=default_dir)
     return parser
 
-def _base_dir_from_cmd(default):
+def _base_dir_from_cmd(default=""):
     parser = default_parser(default)
     args = parser.parse_args()
     return args.base
