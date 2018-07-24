@@ -24,6 +24,7 @@ class Step(Enum):
     ALIGNED = 7
     REDUCED = 8
     POLISH = 9
+    FINAL = 10
 
 def default_parser(default_dir=""):
     parser = argparse.ArgumentParser(description="Part of pipeline")
