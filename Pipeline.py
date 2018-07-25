@@ -39,7 +39,9 @@ def _base_dir_from_cmd(default=""):
     return args.base
 
 def _cache_dir(base, enum):
-    return "{}cache_{}_{}/".format(base, enum.value, enum.name.lower())
+    to_ret = "{}cache_{}_{}/".format(base, enum.value, enum.name.lower())
+    GenUtilities.ensureDirExists(to_ret)
+    return to_ret
 
 
 def _plot_subdir(base, enum, extra_str=""):
