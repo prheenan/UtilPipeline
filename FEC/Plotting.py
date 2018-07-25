@@ -113,11 +113,12 @@ def heatmap_ensemble_plot(data,out_name,xlim=None,kw_map=dict(),f_x=None,
     PlotUtilities.savefig(fig, out_name)
 
 
-def _debug_plot_data(data_retr,base,step,cb=None):
+def _debug_plot_data(data_retr,base,step,extra_before="",cb=None):
     """
     :param data_retr: list of timesepforce object to use
     :param base: base directory
     :param step: step to use
+    :param extra_before: add to the plotting string...
     :param cb: callback, see plot_data. Only used on separation plot.
     :return: nothing
     """
@@ -128,11 +129,13 @@ def _debug_plot_data(data_retr,base,step,cb=None):
                  [lambda _x: _x.Time/1e9  ,"_t","Time (s)"]]
     # for heatmat, skip time
     for f_x,name,xlabel in f_x_name[:-1]:
-        out_name = Pipeline._plot_subdir(base,enum=step) + "Heat_" + name + \
-                   ".png"
+        out_name = Pipeline._plot_subdir(base,enum=step) + extra_before + \
+                   "Heat_" + name + ".png"
         heatmap_ensemble_plot(data_retr,out_name,f_x = f_x,
                                        xlabel=xlabel)
     for i,(f_x,name,xlabel) in enumerate(f_x_name):
         callback_tmp = cb if i==0 else None
+        extra_before_tmp = extra_before + name
         plot_data(base_dir=base, step=step, data=data_retr,
-                  callback=callback_tmp,extra_before=name,xlabel=xlabel,f_x=f_x)
+                  callback=callback_tmp,extra_before=extra_before_tmp,
+                  xlabel=xlabel,f_x=f_x)
