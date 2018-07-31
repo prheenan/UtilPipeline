@@ -53,7 +53,7 @@ def plot_single_fec(d,f_x,xlim,ylim,i,markevery=1,callback=None,
     PlotUtilities.lazyLabel(xlabel, "$F$ (pN)", "")
 
 def plot_data(base_dir,step,data,markevery=1,f_x = lambda x: x.Separation,
-              xlim=None,extra_name="",extra_before="",dpi=200,**kw):
+              xlim=None,ylim=None,extra_name="",extra_before="",dpi=200,**kw):
     """
     :param base_dir: where the data live
     :param step:  what step we are on
@@ -64,11 +64,11 @@ def plot_data(base_dir,step,data,markevery=1,f_x = lambda x: x.Separation,
     """
     plot_subdir = Pipeline._plot_subdir(base_dir, step)
     name_func = FEC_Util.fec_name_func
-    xlim_tmp , ylim = nm_and_pN_limits(data,f_x)
-    if (xlim is not None):
-        xlim = xlim
-    else:
+    xlim_tmp , ylim_tmp = nm_and_pN_limits(data,f_x)
+    if xlim is None:
         xlim = xlim_tmp
+    if ylim is None:
+        ylim = ylim_tmp
     for i,d in enumerate(data):
         f = PlotUtilities.figure(dpi=dpi,figsize=(2.5,2.5))
         plot_single_fec(d, f_x, xlim, ylim,markevery=markevery,i=i,**kw)
@@ -78,8 +78,8 @@ def plot_data(base_dir,step,data,markevery=1,f_x = lambda x: x.Separation,
 
 
 
-def heatmap_ensemble_plot(data,out_name,xlim=None,kw_map=dict(),f_x=None,
-                          xlabel="Extension (nm)",dpi=200):
+def heatmap_ensemble_plot(data,out_name,xlim=None,ylim=None,kw_map=dict(),
+                          f_x=None,xlabel="Extension (nm)",dpi=200):
     """
     makes a heatmap of the ensemble, with the actual data beneath
 
@@ -90,9 +90,11 @@ def heatmap_ensemble_plot(data,out_name,xlim=None,kw_map=dict(),f_x=None,
     if f_x is None:
         f_x = lambda x: x.Separation
     fig = PlotUtilities.figure(figsize=(3, 5),dpi=dpi)
-    xlim_tmp , ylim = nm_and_pN_limits(data,f_x)
+    xlim_tmp , ylim_tmp = nm_and_pN_limits(data,f_x)
     if xlim is None:
         xlim = xlim_tmp
+    if ylim is None:
+        ylim = ylim_tmp
     ax = plt.subplot(2, 1, 1)
     FEC_Plot.heat_map_fec(data, num_bins=(200, 100),x_func=f_x,
                           use_colorbar=False,separation_max=xlim[1],**kw_map)
@@ -103,6 +105,7 @@ def heatmap_ensemble_plot(data,out_name,xlim=None,kw_map=dict(),f_x=None,
     PlotUtilities.title("")
     PlotUtilities.no_x_label(ax)
     plt.xlim(xlim)
+    plt.ylim(ylim)
     plt.subplot(2, 1, 2)
     for d in data:
         x, f = f_x(d) * 1e9, d.Force * 1e12
@@ -110,32 +113,52 @@ def heatmap_ensemble_plot(data,out_name,xlim=None,kw_map=dict(),f_x=None,
                                                       linewidth=0.5))
     PlotUtilities.lazyLabel(xlabel, "Force (pN)", "")
     plt.xlim(xlim)
+    plt.ylim(ylim)
     PlotUtilities.savefig(fig, out_name)
 
 
-def _debug_plot_data(data_retr,base,step,extra_before="",cb=None):
+def _debug_plot_data(data_retr,base,step,extra_before="",cb=None,f_filter=None,
+                     kw_heat=dict(),kw_data=dict()):
     """
     :param data_retr: list of timesepforce object to use
     :param base: base directory
     :param step: step to use
     :param extra_before: add to the plotting string...
     :param cb: callback, see plot_data. Only used on separation plot.
+    :param kw_heat: dictionary passed to heatmap_ensemble_plot
+    :param kw_data: dictionary passed to plot_data
     :return: nothing
     """
+    if f_filter is not None:
+        n = int(np.ceil(data_retr[0].Force.size * f_filter))
+        # filter the data first
+        data_retr = [FEC_Util.GetFilteredForce(d,n) for d in data_retr]
     # make a plot of the individual data points; make sure they are filtered.
     # note that f_x assumed given in nano units (1e-9), so we divide time
     f_x_name = [ [lambda _x: _x.Separation,"_Sep","Extension (nm)"],
-                 [lambda _x: _x.ZSnsr     ,"_Z","ZSnsr (nm)"],
-                 [lambda _x: _x.Time/1e9  ,"_t","Time (s)"]]
+                 [lambda _x: _x.ZSnsr     ,"_Z","ZSnsr (nm)"] ]
     # for heatmat, skip time
     for f_x,name,xlabel in f_x_name[:-1]:
         out_name = Pipeline._plot_subdir(base,enum=step) + extra_before + \
                    "Heat_" + name + ".png"
         heatmap_ensemble_plot(data_retr,out_name,f_x = f_x,
-                                       xlabel=xlabel)
+                              xlabel=xlabel,**kw_heat)
     for i,(f_x,name,xlabel) in enumerate(f_x_name):
         callback_tmp = cb if i==0 else None
         extra_before_tmp = extra_before + name
         plot_data(base_dir=base, step=step, data=data_retr,
                   callback=callback_tmp,extra_before=extra_before_tmp,
                   xlabel=xlabel,f_x=f_x)
+
+def _exhaustive_debug_plot(objs,base,step,f_filter=0.01,**kw_common):
+    """
+    :param objs: list of fecs; will output filtered and unfiltered information
+    :param base:  base place to save
+    :param step:  which step we are using
+    :param f_filter: fraction to filer
+    :param kw_common: passded to _debug_plot_data
+    :return:
+    """
+    _debug_plot_data(data_retr=objs,base=base,step=step,
+                     f_filter=f_filter,extra_before="filtered",**kw_common)
+    _debug_plot_data(data_retr=objs,base=base,step=step,**kw_common)
