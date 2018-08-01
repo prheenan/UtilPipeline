@@ -15,17 +15,19 @@ from .. import Pipeline
 
 from ..Pipeline import Step, _plot_subdir
 
-def nm_and_pN_limits(data,f_x):
+def nm_and_pN_limits(data,f_x,f_y=None,x_convert=1e9,y_convert=1e12):
     """
     :param data: list of FECs
     :param f_x: function to get x values
     :return: tuple of xlimits,ylimits (nano units, and pN, respsecitvely)
     so that all the data will be shown.
     """
+    if f_y is None:
+        f_y = lambda o_: o_.Force
     x_range = [[min(f_x(d)), max(f_x(d))] for d in data]
-    y_range = [[min(d.Force), max(d.Force)] for d in data]
-    xlim = 1e9 * np.array([np.min(x_range), np.max(x_range)])
-    ylim = 1e12 * np.array([np.min(y_range), np.max(y_range)])
+    y_range = [[min(f_y(d)), max(f_y(d))] for d in data]
+    xlim = x_convert * np.array([np.min(x_range), np.max(x_range)])
+    ylim = y_convert * np.array([np.min(y_range), np.max(y_range)])
     return xlim,ylim
 
 def plot_single_fec(d,f_x,xlim,ylim,i,markevery=1,callback=None,
@@ -73,7 +75,7 @@ def plot_data(base_dir,step,data,markevery=1,f_x = lambda x: x.Separation,
     if ylim is None:
         ylim = ylim_tmp
     for i,d in enumerate(data):
-        f = PlotUtilities.figure(dpi=dpi,figsize=(2.5,2.5))
+        f = PlotUtilities.figure(dpi=dpi,figsize=(3.33,3.33))
         plot_single_fec(d, f_x, xlim, ylim,markevery=markevery,i=i,**kw)
         out_name =   plot_subdir + extra_before + name_func(0, d) + \
                      extra_name + ".png"
@@ -96,14 +98,25 @@ def heatmap_ensemble_plot(data,out_name,xlim=None,ylim=None,kw_map=dict(),
     if f_y is None:
         f_y = lambda _y: _y.Force
     fig = PlotUtilities.figure(figsize=(3, 5),dpi=dpi)
-    xlim_tmp , ylim_tmp = nm_and_pN_limits(data,f_x)
+    if 'x_convert' in kw_singles and 'y_convert' in kw_singles:
+        limits_kw = dict(x_convert=kw_singles['x_convert'],
+                         y_convert=kw_singles['y_convert'])
+    else:
+        limits_kw = dict()
+    xlim_tmp , ylim_tmp = nm_and_pN_limits(data,f_x,f_y=f_y,**limits_kw)
     if xlim is None:
         xlim = xlim_tmp
     if ylim is None:
         ylim = ylim_tmp
+    range_x = xlim[1] - xlim[0]
+    range_y = ylim[1] - ylim[0]
+    n_bins_x = np.ceil(range_x)
+    ratio_y_x = range_x/range_y
+    n_bins_y = ratio_y_x * np.ceil(range_y)
     ax = plt.subplot(2, 1, 1)
-    FEC_Plot.heat_map_fec(data, num_bins=(200, 100),x_func=f_x,y_func=f_y,
-                          use_colorbar=False,separation_max=xlim[1],**kw_map)
+    FEC_Plot.heat_map_fec(data, num_bins=(n_bins_x, n_bins_y),x_func=f_x,
+                          y_func=f_y,use_colorbar=False,
+                          separation_max=xlim[1],force_max=ylim[1],**kw_map)
     for spine_name in ["bottom", "top"]:
         PlotUtilities.color_axis_ticks(color='w', spine_name=spine_name,
                                        axis_name="x", ax=ax)
@@ -160,13 +173,16 @@ def _debug_plot_data(data_retr,base,step,extra_before="",cb=None,f_filter=None,
     f_sep = lambda _x: _x.ZSnsr
     f_z = lambda _x: _x.Separation
     # note that the 'y' here is the x the use specifies (separation limi)
+    xlim_z, _ = nm_and_pN_limits(data_retr, f_x=f_z)
     if 'xlim' not in kw_q_z:
         xlim_sep, _ = nm_and_pN_limits(data_retr,f_x=f_sep)
         kw_q_z['ylim'] = xlim_sep
     else:
-        kw_q_z['ylim'] = kw_q_z['xlim']
-    # always gix the x limits
-    xlim_z, _ = nm_and_pN_limits(data_retr,f_x=f_z)
+        xlim_tmp = kw_q_z['xlim']
+        kw_q_z['ylim'] = xlim_tmp
+        xlim_z[0] = max(xlim_z[0],xlim_tmp[0])
+        xlim_z[1] = min(xlim_z[1],xlim_tmp[1])
+    # always set the x limits to Z...
     kw_q_z['xlim'] = xlim_z
     # make sure to convert everything to nm
     kw_q_z_conversion =  dict(x_convert=1e9,y_convert=1e9)
