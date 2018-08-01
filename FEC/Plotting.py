@@ -83,7 +83,7 @@ def plot_data(base_dir,step,data,markevery=1,f_x = lambda x: x.Separation,
 
 def heatmap_ensemble_plot(data,out_name,xlim=None,ylim=None,kw_map=dict(),
                           f_x=None,f_y=None,xlabel="Extension (nm)",dpi=200,
-                          kw_singles=dict(linewidth=0.5)):
+                          ylabel="Force (pN)",kw_singles=dict()):
     """
     makes a heatmap of the ensemble, with the actual data beneath
 
@@ -107,16 +107,18 @@ def heatmap_ensemble_plot(data,out_name,xlim=None,ylim=None,kw_map=dict(),
     for spine_name in ["bottom", "top"]:
         PlotUtilities.color_axis_ticks(color='w', spine_name=spine_name,
                                        axis_name="x", ax=ax)
+    PlotUtilities.ylabel(ylabel)
     PlotUtilities.xlabel("")
     PlotUtilities.title("")
     PlotUtilities.no_x_label(ax)
     plt.xlim(xlim)
     plt.ylim(ylim)
     plt.subplot(2, 1, 2)
-    kw_common = dict( style_data=dict(color=None, alpha=0.3,linewidth=0.5))
+    kw_common = dict( style_data=dict(color=None, alpha=0.3,linewidth=0.5),
+                      **kw_singles)
     for i,d in enumerate(data):
-        plot_single_fec(d, f_x, xlim, ylim,i,**kw_common)
-    PlotUtilities.lazyLabel(xlabel, "Force (pN)", "")
+        plot_single_fec(d, f_x, xlim, ylim,i,f_y=f_y,**kw_common)
+    PlotUtilities.lazyLabel(xlabel,ylabel, "")
     plt.xlim(xlim)
     plt.ylim(ylim)
     PlotUtilities.savefig(fig, out_name)
@@ -152,6 +154,28 @@ def _debug_plot_data(data_retr,base,step,extra_before="",cb=None,f_filter=None,
     for f_x,name,xlabel in f_x_name:
         _output_heatmap(data=data_retr,f_x=f_x,name=name,xlabel=xlabel,
                         **kw_heat_common)
+    # make a special q VS z plot (sometime useful for energy landscapes)
+    kw_q_z = dict(**kw_heat_common)
+    # change the x and y limits to be the same, if we specified.
+    f_sep = lambda _x: _x.ZSnsr
+    f_z = lambda _x: _x.Separation
+    # note that the 'y' here is the x the use specifies (separation limi)
+    if 'xlim' not in kw_q_z:
+        xlim_sep, _ = nm_and_pN_limits(data_retr,f_x=f_sep)
+        kw_q_z['ylim'] = xlim_sep
+    else:
+        kw_q_z['ylim'] = kw_q_z['xlim']
+    # always gix the x limits
+    xlim_z, _ = nm_and_pN_limits(data_retr,f_x=f_z)
+    kw_q_z['xlim'] = xlim_z
+    # make sure to convert everything to nm
+    kw_q_z_conversion =  dict(x_convert=1e9,y_convert=1e9)
+    kw_q_z['kw_singles'] = kw_q_z_conversion
+    convert_x = lambda tmp: tmp * 1e9
+    conversion = dict(ConvertX=convert_x,ConvertY=convert_x)
+    kw_q_z['kw_map'] = dict(ConversionOpts=conversion)
+    _output_heatmap(data=data_retr, f_x=f_z,f_y=f_sep,name="_q_vs_z",
+                    xlabel="ZSnsr (nm)",ylabel="Separation (nm)",**kw_q_z)
     # make a 'q vs z' plot (~ q vs time, but important for landsacpe stuff)
     for i,(f_x,name,xlabel) in enumerate(f_x_name):
         callback_tmp = cb if i==0 else None
