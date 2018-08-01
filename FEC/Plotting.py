@@ -29,7 +29,8 @@ def nm_and_pN_limits(data,f_x):
     return xlim,ylim
 
 def plot_single_fec(d,f_x,xlim,ylim,i,markevery=1,callback=None,
-                    xlabel="Extension (nm)",**kw):
+                    xlabel="Extension (nm)",x_convert=1e9,y_convert=1e12,
+                    f_y=None,**kw):
     """
     :param d: data to plot
     :param f_x: returns x, assumed in nano units
@@ -43,8 +44,10 @@ def plot_single_fec(d,f_x,xlim,ylim,i,markevery=1,callback=None,
     :param kw: passed to FEC_Plot._fec_base_plot
     :return:
     """
-    x = f_x(d)[::markevery] * 1e9
-    f = d.Force[::markevery] * 1e12
+    if f_y is None:
+        f_y = lambda _x: _x.Force
+    x = f_x(d)[::markevery] * x_convert
+    f = f_y(d)[::markevery] * y_convert
     FEC_Plot._fec_base_plot(x,f,**kw)
     plt.xlim(xlim)
     plt.ylim(ylim)
@@ -79,7 +82,8 @@ def plot_data(base_dir,step,data,markevery=1,f_x = lambda x: x.Separation,
 
 
 def heatmap_ensemble_plot(data,out_name,xlim=None,ylim=None,kw_map=dict(),
-                          f_x=None,xlabel="Extension (nm)",dpi=200):
+                          f_x=None,f_y=None,xlabel="Extension (nm)",dpi=200,
+                          kw_singles=dict(linewidth=0.5)):
     """
     makes a heatmap of the ensemble, with the actual data beneath
 
@@ -89,6 +93,8 @@ def heatmap_ensemble_plot(data,out_name,xlim=None,ylim=None,kw_map=dict(),
     """
     if f_x is None:
         f_x = lambda x: x.Separation
+    if f_y is None:
+        f_y = lambda _y: _y.Force
     fig = PlotUtilities.figure(figsize=(3, 5),dpi=dpi)
     xlim_tmp , ylim_tmp = nm_and_pN_limits(data,f_x)
     if xlim is None:
@@ -96,7 +102,7 @@ def heatmap_ensemble_plot(data,out_name,xlim=None,ylim=None,kw_map=dict(),
     if ylim is None:
         ylim = ylim_tmp
     ax = plt.subplot(2, 1, 1)
-    FEC_Plot.heat_map_fec(data, num_bins=(200, 100),x_func=f_x,
+    FEC_Plot.heat_map_fec(data, num_bins=(200, 100),x_func=f_x,y_func=f_y,
                           use_colorbar=False,separation_max=xlim[1],**kw_map)
     for spine_name in ["bottom", "top"]:
         PlotUtilities.color_axis_ticks(color='w', spine_name=spine_name,
@@ -107,15 +113,18 @@ def heatmap_ensemble_plot(data,out_name,xlim=None,ylim=None,kw_map=dict(),
     plt.xlim(xlim)
     plt.ylim(ylim)
     plt.subplot(2, 1, 2)
-    for d in data:
-        x, f = f_x(d) * 1e9, d.Force * 1e12
-        FEC_Plot._fec_base_plot(x, f, style_data=dict(color=None, alpha=0.3,
-                                                      linewidth=0.5))
+    kw_common = dict( style_data=dict(color=None, alpha=0.3,linewidth=0.5))
+    for i,d in enumerate(data):
+        plot_single_fec(d, f_x, xlim, ylim,i,**kw_common)
     PlotUtilities.lazyLabel(xlabel, "Force (pN)", "")
     plt.xlim(xlim)
     plt.ylim(ylim)
     PlotUtilities.savefig(fig, out_name)
 
+def _output_heatmap(data,base,step,extra_before,name,**kw):
+    out_name = Pipeline._plot_subdir(base, enum=step) + extra_before + \
+               "Heat_" + name + ".png"
+    heatmap_ensemble_plot(data,out_name,**kw)
 
 def _debug_plot_data(data_retr,base,step,extra_before="",cb=None,f_filter=None,
                      kw_heat=dict(),kw_data=dict()):
@@ -137,18 +146,19 @@ def _debug_plot_data(data_retr,base,step,extra_before="",cb=None,f_filter=None,
     # note that f_x assumed given in nano units (1e-9), so we divide time
     f_x_name = [ [lambda _x: _x.Separation,"_Sep","Extension (nm)"],
                  [lambda _x: _x.ZSnsr     ,"_Z","ZSnsr (nm)"] ]
-    # for heatmat, skip time
-    for f_x,name,xlabel in f_x_name[:-1]:
-        out_name = Pipeline._plot_subdir(base,enum=step) + extra_before + \
-                   "Heat_" + name + ".png"
-        heatmap_ensemble_plot(data_retr,out_name,f_x = f_x,
-                              xlabel=xlabel,**kw_heat)
+    # make the individual heatmaps
+    kw_heat_common = dict(base=base, step=step,extra_before=extra_before,
+                          **kw_heat)
+    for f_x,name,xlabel in f_x_name:
+        _output_heatmap(data=data_retr,f_x=f_x,name=name,xlabel=xlabel,
+                        **kw_heat_common)
+    # make a 'q vs z' plot (~ q vs time, but important for landsacpe stuff)
     for i,(f_x,name,xlabel) in enumerate(f_x_name):
         callback_tmp = cb if i==0 else None
         extra_before_tmp = extra_before + name
         plot_data(base_dir=base, step=step, data=data_retr,
                   callback=callback_tmp,extra_before=extra_before_tmp,
-                  xlabel=xlabel,f_x=f_x)
+                  xlabel=xlabel,f_x=f_x,**kw_data)
 
 def _exhaustive_debug_plot(objs,base,step,f_filter=0.01,**kw_common):
     """
