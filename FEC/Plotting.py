@@ -227,13 +227,43 @@ def _debug_plot_data(data_retr,base,step,extra_before="",cb=None,f_filter=None,
                   callback=callback_tmp,extra_before=extra_before_tmp,
                   xlabel=xlabel,f_x=f_x,**kw_data)
 
+def gallery_plot(fecs_refold,out_path,f_x=lambda _x: _x.ZSnsr,x_convert=1e9,
+                 xlabel="ZSnsr (nm)",max_gallery=None):
+    """
+    :param fecs_refold: to plot
+    :param out_path:  where the gallery plot should go
+    :return:  nothing
+    """
+    if max_gallery is not None:
+        fecs_refold = fecs_refold[:max_gallery]
+    kw_savefig_ind=dict(subplots_adjust=dict(hspace=0.02,wspace=0.02))
+    n_fecs = len(fecs_refold)
+    inch_per_fec = 1.2
+    n_side = int(np.ceil(np.sqrt(n_fecs)))
+    size = n_side * inch_per_fec * np.array([1,1])
+    fig = PlotUtilities.figure(size)
+    xlim, ylim = nm_and_pN_limits(fecs_refold,f_x=f_x,x_convert=x_convert)
+    last_row_first_element = n_side * (n_side-1)
+    for i,r in enumerate(fecs_refold):
+        ax = plt.subplot(n_side,n_side,(i+1))
+        plot_single_fec(r, f_x=f_x, xlim=xlim, ylim=ylim, i=i,xlabel=xlabel)
+        if (i != 0):
+            PlotUtilities.ylabel("")
+            PlotUtilities.no_y_label(ax=ax)
+        if (i != last_row_first_element):
+            PlotUtilities.xlabel("")
+            PlotUtilities.no_x_label(ax=ax)
+    PlotUtilities.savefig(fig,out_path,**kw_savefig_ind)
+
+
 def _exhaustive_debug_plot(objs,base,step,f_filter=0.01,extra_before="",
-                           **kw_common):
+                           max_gallery=25,**kw_common):
     """
     :param objs: list of fecs; will output filtered and unfiltered information
     :param base:  base place to save
     :param step:  which step we are using
     :param f_filter: fraction to filer
+    :param max_gallery: maximum number to plot on the gallery.
     :param kw_common: passded to _debug_plot_data
     :return:
     """
@@ -241,3 +271,8 @@ def _exhaustive_debug_plot(objs,base,step,f_filter=0.01,extra_before="",
                      f_filter=f_filter,extra_before="filtered" + extra_before,
                      **kw_common)
     _debug_plot_data(data_retr=objs,base=base,step=step,**kw_common)
+    plot_subdir = Pipeline._plot_subdir(base, step)
+    for  f_x,name,label in _f_x_name_def():
+        out_path = plot_subdir + extra_before + "Gallery_{:s}.png".format(name)
+        gallery_plot(objs,out_path=out_path,xlabel=name,f_x=f_x,x_convert=1e9,
+                     max_gallery=max_gallery)
