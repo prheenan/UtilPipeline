@@ -201,7 +201,7 @@ def _filter_f(data,f_filter=None):
     return data_retr
 
 def _debug_plot_data(data_retr,base,step,extra_before="",cb=None,f_filter=None,
-                     kw_heat=dict(),kw_data=dict()):
+                     kw_heat=dict(),kw_data=dict(),plot_each=True):
     """
     :param data_retr: list of timesepforce object to use
     :param base: base directory
@@ -210,12 +210,15 @@ def _debug_plot_data(data_retr,base,step,extra_before="",cb=None,f_filter=None,
     :param cb: callback, see plot_data. Only used on separation plot.
     :param kw_heat: dictionary passed to heatmap_ensemble_plot
     :param kw_data: dictionary passed to plot_data
+    :param plot_each: if true, plots all individual data
     :return: nothing
     """
-    _filter_f(data_retr, f_filter=f_filter)
+    data_retr = _filter_f(data_retr, f_filter=f_filter)
     # make a plot of the individual data points; make sure they are filtered.
     f_x_name = _f_x_name_def()
     _heatmap_subplots(data_retr, base, step, extra_before, **kw_heat)
+    if not plot_each:
+        return
     # make a 'q vs z' plot (~ q vs time, but important for landsacpe stuff)
     for i,(f_x,name,xlabel) in enumerate(f_x_name):
         callback_tmp = cb if i==0 else None
@@ -224,7 +227,8 @@ def _debug_plot_data(data_retr,base,step,extra_before="",cb=None,f_filter=None,
                   callback=callback_tmp,extra_before=extra_before_tmp,
                   xlabel=xlabel,f_x=f_x,**kw_data)
 
-def _exhaustive_debug_plot(objs,base,step,f_filter=0.01,**kw_common):
+def _exhaustive_debug_plot(objs,base,step,f_filter=0.01,extra_before="",
+                           **kw_common):
     """
     :param objs: list of fecs; will output filtered and unfiltered information
     :param base:  base place to save
@@ -234,5 +238,6 @@ def _exhaustive_debug_plot(objs,base,step,f_filter=0.01,**kw_common):
     :return:
     """
     _debug_plot_data(data_retr=objs,base=base,step=step,
-                     f_filter=f_filter,extra_before="filtered",**kw_common)
+                     f_filter=f_filter,extra_before="filtered" + extra_before,
+                     **kw_common)
     _debug_plot_data(data_retr=objs,base=base,step=step,**kw_common)
