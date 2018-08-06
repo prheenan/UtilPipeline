@@ -25,7 +25,7 @@ def assert_consistent_split_FEC(split,**kw):
     _assert_consistent_force(split.retract,**kw)
     _assert_consistent_force(split.approach,**kw)
 
-def _assert_consistent_force(retract,rtol=1e-3,atol=1e-12/200):
+def _assert_consistent_force(retract,rtol=1e-6,atol=1e-20):
     """
     :param retract: FEC to check. should have SpringConstant, Separation,
     and Zsnsr
