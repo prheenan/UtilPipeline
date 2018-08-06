@@ -267,7 +267,8 @@ def gallery_plot(fecs_refold,out_path,f_x=lambda _x: _x.ZSnsr,x_convert=1e9,
     size = n_side * inch_per_fec * np.array([1,1])
     fig = PlotUtilities.figure(size)
     xlim, ylim = nm_and_pN_limits(fecs_refold,f_x=f_x,x_convert=x_convert)
-    last_row_first_element = n_side * (n_fecs // n_side)
+    last_row_first_element = min(n_side*(n_side-1),
+                                 n_side * (n_fecs // n_side))
     for i,r in enumerate(fecs_refold):
         ax = plt.subplot(n_side,n_side,(i+1))
         plot_single_fec(r, f_x=f_x, xlim=xlim, ylim=ylim, i=i,xlabel=xlabel,
