@@ -37,6 +37,6 @@ def _assert_consistent_force(retract,rtol=1e-6,atol=1e-20):
     # note that we don't really care about the overall sign
     should_be_abs_force = np.abs(k*(q-z))
     abs_force = np.abs(retract.Force)
-    should_be_near_zero = should_be_abs_force - abs_force
+    should_be_near_zero = np.abs(should_be_abs_force - abs_force)
     # make sure the force is zero within a small fraction of a pN..
     np.testing.assert_allclose(should_be_near_zero,0,atol=atol,rtol=rtol)
