@@ -7,6 +7,8 @@ from __future__ import unicode_literals
 # This file is used for importing the common utilities classes.
 import numpy as np
 
+def assert_list_consistent(list_v,**kw):
+    [assert_consistent_FEC(e,**kw) for e in list_v ]
 
 def assert_consistent_FEC(retract,**kw):
     """
