@@ -246,7 +246,8 @@ def gallery_plot(fecs_refold,out_path,f_x=lambda _x: _x.ZSnsr,x_convert=1e9,
     last_row_first_element = n_side * (n_side-1)
     for i,r in enumerate(fecs_refold):
         ax = plt.subplot(n_side,n_side,(i+1))
-        plot_single_fec(r, f_x=f_x, xlim=xlim, ylim=ylim, i=i,xlabel=xlabel)
+        plot_single_fec(r, f_x=f_x, xlim=xlim, ylim=ylim, i=i,xlabel=xlabel,
+                        x_convert=x_convert)
         if (i != 0):
             PlotUtilities.ylabel("")
             PlotUtilities.no_y_label(ax=ax)
@@ -255,6 +256,32 @@ def gallery_plot(fecs_refold,out_path,f_x=lambda _x: _x.ZSnsr,x_convert=1e9,
             PlotUtilities.no_x_label(ax=ax)
     PlotUtilities.savefig(fig,out_path,**kw_savefig_ind)
 
+
+def _gallery_plots(objs,base,step,extra_before,max_gallery=25):
+    """
+    Makes gallery plots for force versus time, Separaiton ,ZSnsr.
+
+    :param objs: see: gallery_plot
+    :param base: see: gallery_plot
+    :param step: see: gallery_plot
+    :param extra_before: see: gallery_plot
+    :param max_gallery: see: gallery_plot
+    :return: Nothing, outputs plots as we want them.
+    """
+    plot_subdir = Pipeline._plot_subdir(base, step)
+    for  f_x,name,label in _f_x_name_def():
+        out_path = plot_subdir + extra_before + "_Gallery_{:s}.png".format(name)
+        gallery_plot(objs,out_path=out_path,xlabel=label,f_x=f_x,x_convert=1e9,
+                     max_gallery=max_gallery)
+    # make one of time, but zero out everything
+    objs_for_time = []
+    for o in objs:
+        copy = o._slice(slice(0,None,1))
+        copy.Time -= copy.Time[0]
+        objs_for_time.append(copy)
+    out_time = plot_subdir + extra_before + "_Gallery_Time.png"
+    gallery_plot(objs_for_time, out_path=out_time, xlabel="Time (s)",
+                 f_x=lambda _x:_x.Time , x_convert=1,max_gallery=max_gallery)
 
 def _exhaustive_debug_plot(objs,base,step,f_filter=0.01,extra_before="",
                            max_gallery=25,**kw_common):
@@ -267,12 +294,8 @@ def _exhaustive_debug_plot(objs,base,step,f_filter=0.01,extra_before="",
     :param kw_common: passded to _debug_plot_data
     :return:
     """
+    _gallery_plots(objs, base, step, extra_before, max_gallery)
     _debug_plot_data(data_retr=objs,base=base,step=step,
-                     f_filter=f_filter,extra_before="filtered" + extra_before,
+                     f_filter=f_filter,extra_before="filtered_" + extra_before,
                      **kw_common)
     _debug_plot_data(data_retr=objs,base=base,step=step,**kw_common)
-    plot_subdir = Pipeline._plot_subdir(base, step)
-    for  f_x,name,label in _f_x_name_def():
-        out_path = plot_subdir + extra_before + "Gallery_{:s}.png".format(name)
-        gallery_plot(objs,out_path=out_path,xlabel=name,f_x=f_x,x_convert=1e9,
-                     max_gallery=max_gallery)
