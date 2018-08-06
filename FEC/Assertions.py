@@ -23,7 +23,7 @@ def assert_consistent_split_FEC(split):
     _assert_consistent_force(split.retract)
     _assert_consistent_force(split.approach)
 
-def _assert_consistent_force(retract):
+def _assert_consistent_force(retract,rtol=1e-3,atol=1e-12/200):
     """
     :param retract: FEC to check. should have SpringConstant, Separation,
     and Zsnsr
@@ -32,7 +32,9 @@ def _assert_consistent_force(retract):
     k = retract.SpringConstant
     q = retract.Separation
     z = retract.ZSnsr
-    should_be_force = k*(q-z)
-    should_be_near_zero = should_be_force - retract.Force
-    # make sure the force is zero within a pN/1e6 or so
-    np.testing.assert_allclose(should_be_near_zero,0,atol=1e-18,rtol=1e-6)
+    # note that we don't really care about the overall sign
+    should_be_force = np.abs(k*(q-z))
+    abs_force = np.abs(retract.Force)
+    should_be_near_zero = should_be_force -abs_force
+    # make sure the force is zero within a small fraction of a pN..
+    np.testing.assert_allclose(should_be_near_zero,0,atol=atol,rtol=rtol)
