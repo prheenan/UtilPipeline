@@ -8,20 +8,20 @@ from __future__ import unicode_literals
 import numpy as np
 
 
-def assert_consistent_FEC(retract):
+def assert_consistent_FEC(retract,**kw):
     """
     :param retract: see  _assert_consistent_zeroing
     :return: nothing, throws error if the FEC has been corrupted.
     """
-    _assert_consistent_force(retract)
+    _assert_consistent_force(retract,**kw)
 
-def assert_consistent_split_FEC(split):
+def assert_consistent_split_FEC(split,**kw):
     """
     :param split: with approach and retract attributes
     :return: nothing, but see assert_consistent_FEC
     """
-    _assert_consistent_force(split.retract)
-    _assert_consistent_force(split.approach)
+    _assert_consistent_force(split.retract,**kw)
+    _assert_consistent_force(split.approach,**kw)
 
 def _assert_consistent_force(retract,rtol=1e-3,atol=1e-12/200):
     """
