@@ -83,21 +83,28 @@ def plot_data(base_dir,step,data,markevery=1,f_x = lambda x: x.Separation,
 
 
 
-def heatmap_ensemble_plot(data,out_name,xlim=None,ylim=None,kw_map=dict(),
-                          f_x=None,f_y=None,xlabel="Extension (nm)",dpi=200,
-                          ylabel="Force (pN)",kw_singles=dict()):
+def _heatmap_generation(data,xlim=None,ylim=None,kw_map=dict(),
+                        f_x=None,f_y=None,xlabel="Extension (nm)",
+                        ylabel="Force (pN)",kw_singles=dict(),ax1=None,
+                        ax2=None):
     """
-    makes a heatmap of the ensemble, with the actual data beneath
-
-    :param data: list of FECs
-    :param out_name: what to save this as
-    :return: na
+    :param data: list of fecs
+    :param xlim: for the fecs; if none, defaults to full range
+    :param ylim: for the fecs; if none, defaults to full range
+    :param kw_map: passed to FEC_Util.heat_map_fec
+    :param f_x: takes in element of fec list, returns x to plot
+    :param f_y: takes in element of fec list, returns y to plot
+    :param xlabel: label for the x axis
+    :param ylabel: label for the y axis
+    :param kw_singles: passed to plot_single_fec for each of data
+    :param ax1: where to put the heatmap (defaults to first row of 2)
+    :param ax2: where to put the inidivual FECs (defaults to second row of 2)
+    :return:
     """
     if f_x is None:
         f_x = lambda x: x.Separation
     if f_y is None:
         f_y = lambda _y: _y.Force
-    fig = PlotUtilities.figure(figsize=(3, 5),dpi=dpi)
     if 'x_convert' in kw_singles and 'y_convert' in kw_singles:
         limits_kw = dict(x_convert=kw_singles['x_convert'],
                          y_convert=kw_singles['y_convert'])
@@ -113,20 +120,24 @@ def heatmap_ensemble_plot(data,out_name,xlim=None,ylim=None,kw_map=dict(),
     n_bins_x = np.ceil(range_x)
     ratio_y_x = range_x/range_y
     n_bins_y = ratio_y_x * np.ceil(range_y)
-    ax = plt.subplot(2, 1, 1)
+    if (ax1 is None):
+        ax1 = plt.subplot(2,1,1)
+    plt.sca(ax1)
     FEC_Plot.heat_map_fec(data, num_bins=(n_bins_x, n_bins_y),x_func=f_x,
                           y_func=f_y,use_colorbar=False,
                           separation_max=xlim[1],force_max=ylim[1],**kw_map)
     for spine_name in ["bottom", "top"]:
         PlotUtilities.color_axis_ticks(color='w', spine_name=spine_name,
-                                       axis_name="x", ax=ax)
+                                       axis_name="x", ax=ax1)
     PlotUtilities.ylabel(ylabel)
     PlotUtilities.xlabel("")
     PlotUtilities.title("")
-    PlotUtilities.no_x_label(ax)
+    PlotUtilities.no_x_label(ax1)
     plt.xlim(xlim)
     plt.ylim(ylim)
-    plt.subplot(2, 1, 2)
+    if (ax2 is None):
+        ax2 = plt.subplot(2,1,2)
+    plt.sca(ax2)
     kw_common = dict( style_data=dict(color=None, alpha=0.3,linewidth=0.5),
                       **kw_singles)
     for i,d in enumerate(data):
@@ -134,7 +145,20 @@ def heatmap_ensemble_plot(data,out_name,xlim=None,ylim=None,kw_map=dict(),
     PlotUtilities.lazyLabel(xlabel,ylabel, "")
     plt.xlim(xlim)
     plt.ylim(ylim)
+
+def heatmap_ensemble_plot(data,out_name,dpi=200,*args,**kwargs):
+    """
+    :param data: see _heatmap_generation
+    :param out_name: what to save the standard heatmap as.
+    :param dpi: see .figure
+    :param args: see _heatmap_generation
+    :param kwargs: see _heatmap_generation
+    :return:
+    """
+    fig = PlotUtilities.figure(figsize=(3, 5),dpi=dpi)
+    _heatmap_generation(data, *args,**kwargs)
     PlotUtilities.savefig(fig, out_name)
+
 
 def _output_heatmap(data,base,step,extra_before,name,**kw):
     out_name = Pipeline._plot_subdir(base, enum=step) + extra_before + \
