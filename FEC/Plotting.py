@@ -262,10 +262,10 @@ def gallery_plot(fecs_refold,out_path,f_x=lambda _x: _x.ZSnsr,x_convert=1e9,
         fecs_refold = fecs_refold[:max_gallery]
     kw_savefig_ind=dict(subplots_adjust=dict(hspace=0.02,wspace=0.02))
     n_fecs = len(fecs_refold)
-    inch_per_fec = 1.2
+    inch_per_fec = 1
     n_side = int(np.ceil(np.sqrt(n_fecs)))
     size = n_side * inch_per_fec * np.array([1,1])
-    fig = PlotUtilities.figure(size)
+    fig = PlotUtilities.figure(size,dpi=100)
     xlim, ylim = nm_and_pN_limits(fecs_refold,f_x=f_x,x_convert=x_convert)
     last_row_first_element = min(n_side*(n_side-1),
                                  n_side * (n_fecs // n_side))
