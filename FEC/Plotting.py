@@ -75,7 +75,7 @@ def plot_data(base_dir,step,data,markevery=1,f_x = lambda x: x.Separation,
     if ylim is None:
         ylim = ylim_tmp
     for i,d in enumerate(data):
-        f = PlotUtilities.figure(dpi=dpi,figsize=(3.33,3.33))
+        f = PlotUtilities.figure(dpi=dpi,figsize=(2.5,2.5))
         plot_single_fec(d, f_x, xlim, ylim,markevery=markevery,i=i,**kw)
         out_name =   plot_subdir + extra_before + name_func(0, d) + \
                      extra_name + ".png"
@@ -265,7 +265,7 @@ def gallery_plot(fecs_refold,out_path,f_x=lambda _x: _x.ZSnsr,x_convert=1e9,
     inch_per_fec = 1
     n_side = int(np.ceil(np.sqrt(n_fecs)))
     size = n_side * inch_per_fec * np.array([1,1])
-    fig = PlotUtilities.figure(size,dpi=100)
+    fig = PlotUtilities.figure(size,dpi=200)
     xlim, ylim = nm_and_pN_limits(fecs_refold,f_x=f_x,x_convert=x_convert)
     last_row_first_element = min(n_side*(n_side-1),
                                  n_side * (n_fecs // n_side))
