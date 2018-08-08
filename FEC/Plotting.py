@@ -14,6 +14,7 @@ from ..UtilForce.FEC import FEC_Util, FEC_Plot
 from .. import Pipeline
 
 from ..Pipeline import Step, _plot_subdir
+_def_max_gallery = 16
 
 def nm_and_pN_limits(data,f_x,f_y=None,x_convert=1e9,y_convert=1e12):
     """
@@ -281,8 +282,7 @@ def gallery_plot(fecs_refold,out_path,f_x=lambda _x: _x.ZSnsr,x_convert=1e9,
             PlotUtilities.no_x_label(ax=ax)
     PlotUtilities.savefig(fig,out_path,**kw_savefig_ind)
 
-
-def _gallery_plots(objs,base,step,extra_before,max_gallery=25):
+def _gallery_plots(objs,base,step,extra_before,max_gallery=_def_max_gallery):
     """
     Makes gallery plots for force versus time, Separaiton ,ZSnsr.
 
@@ -309,7 +309,7 @@ def _gallery_plots(objs,base,step,extra_before,max_gallery=25):
                  f_x=lambda _x:_x.Time , x_convert=1,max_gallery=max_gallery)
 
 def _exhaustive_debug_plot(objs,base,step,f_filter=0.01,extra_before="",
-                           max_gallery=25,**kw_common):
+                           max_gallery=_def_max_gallery,**kw_common):
     """
     :param objs: list of fecs; will output filtered and unfiltered information
     :param base:  base place to save
