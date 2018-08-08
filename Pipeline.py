@@ -26,6 +26,7 @@ class Step(Enum):
     REDUCED = 9
     POLISH = 10
     FINAL = 11
+    DEBUG = 12
 
 def default_parser(default_dir=""):
     parser = argparse.ArgumentParser(description="Part of pipeline")
