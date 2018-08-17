@@ -19,12 +19,14 @@ class Step(Enum):
     CORRECTED = 2
     MANUAL = 3
     SANITIZED = 4
-    DETECTED = 5
-    ZEROED = 6
-    ALIGNED = 7
-    REDUCED = 8
-    POLISH = 9
-    FINAL = 10
+    POST_FILTERED =5
+    DETECTED = 6
+    ZEROED = 7
+    ALIGNED = 8
+    REDUCED = 9
+    POLISH = 10
+    FINAL = 11
+    DEBUG = 12
 
 def default_parser(default_dir=""):
     parser = argparse.ArgumentParser(description="Part of pipeline")
