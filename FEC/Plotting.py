@@ -90,6 +90,15 @@ def plot_data(base_dir,step,data,markevery=1,f_x = lambda x: x.Separation,
         PlotUtilities.savefig(f,out_name)
 
 
+def formatted_heatmap(data,color='w',**kw):
+    ax1 = plt.gca()
+    FEC_Plot.heat_map_fec(data, **kw)
+    for spine_name in ["bottom", "top"]:
+        for axis_name in ['x','y']:
+            PlotUtilities.color_axis_ticks(color=color, spine_name=spine_name,
+                                           axis_name=axis_name, ax=ax1)
+
+
 
 def _heatmap_generation(data,xlim=None,ylim=None,kw_map=dict(),
                         f_x=None,f_y=None,xlabel="Extension (nm)",
@@ -131,12 +140,9 @@ def _heatmap_generation(data,xlim=None,ylim=None,kw_map=dict(),
     if (ax1 is None):
         ax1 = plt.subplot(2,1,1)
     plt.sca(ax1)
-    FEC_Plot.heat_map_fec(data, num_bins=(n_bins_x, n_bins_y),x_func=f_x,
-                          y_func=f_y,use_colorbar=False,
-                          separation_max=xlim[1],force_max=ylim[1],**kw_map)
-    for spine_name in ["bottom", "top"]:
-        PlotUtilities.color_axis_ticks(color='w', spine_name=spine_name,
-                                       axis_name="x", ax=ax1)
+    formatted_heatmap(data,num_bins = (n_bins_x, n_bins_y), x_func = f_x,
+                      y_func = f_y, use_colorbar = False,
+                      separation_max = xlim[1], force_max = ylim[1], ** kw_map)
     PlotUtilities.ylabel(ylabel)
     PlotUtilities.xlabel("")
     PlotUtilities.title("")
