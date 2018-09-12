@@ -72,7 +72,12 @@ def plot_data(base_dir,step,data,markevery=1,f_x = lambda x: x.Separation,
     """
     plot_subdir = Pipeline._plot_subdir(base_dir, step)
     name_func = FEC_Util.fec_name_func
-    xlim_tmp , ylim_tmp = nm_and_pN_limits(data,f_x)
+    kw_limits = dict()
+    if 'x_convert' in kw:
+        kw_limits['x_convert'] = kw['x_convert']
+    if 'y_convert' in kw:
+        kw_limits['y_convert'] = kw['y_convert']
+    xlim_tmp , ylim_tmp = nm_and_pN_limits(data,f_x,**kw_limits)
     if xlim is None:
         xlim = xlim_tmp
     if ylim is None:
