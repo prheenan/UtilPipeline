@@ -25,6 +25,8 @@ def nm_and_pN_limits(data,f_x,f_y=None,x_convert=1e9,y_convert=1e12):
     """
     if f_y is None:
         f_y = lambda o_: o_.Force
+    if len(data)==0:
+        return [None,None], [None,None]
     x_range = [[min(f_x(d)), max(f_x(d))] for d in data]
     y_range = [[min(f_y(d)), max(f_y(d))] for d in data]
     xlim = x_convert * np.array([np.min(x_range), np.max(x_range)])
@@ -176,6 +178,8 @@ def _heatmap_subplots(data_retr,base,step,extra_before,**kw_heat):
     :return: nothing
     """
     # make the individual heatmaps
+    if len(data_retr) == 0:
+        return
     f_x_name = _f_x_name_def()
     kw_heat_common = dict(base=base, step=step, extra_before=extra_before,
                           **kw_heat)
@@ -217,7 +221,7 @@ def _f_x_name_def():
     return to_ret
 
 def _filter_f(data,f_filter=None):
-    if f_filter is not None and f_filter > 0:
+    if (len(data) > 0) and (f_filter is not None) and (f_filter > 0):
         n = int(np.ceil(data[0].Force.size * f_filter))
         # filter the data first
         data_retr = [FEC_Util.GetFilteredForce(d,n) for d in data]
@@ -261,6 +265,8 @@ def gallery_plot(fecs_refold,out_path,f_x=lambda _x: _x.ZSnsr,x_convert=1e9,
     """
     if max_gallery is not None:
         fecs_refold = fecs_refold[:max_gallery]
+    if len(fecs_refold) == 0:
+        return
     kw_savefig_ind=dict(subplots_adjust=dict(hspace=0.02,wspace=0.02))
     n_fecs = len(fecs_refold)
     inch_per_fec = 1
