@@ -8,14 +8,14 @@ from __future__ import unicode_literals
 import numpy as np
 
 def assert_list_consistent(list_v,**kw):
-    [assert_consistent_FEC(e,**kw) for e in list_v ]
+    return [assert_consistent_FEC(e,**kw) for e in list_v ]
 
 def assert_consistent_FEC(retract,**kw):
     """
     :param retract: see  _assert_consistent_zeroing
     :return: nothing, throws error if the FEC has been corrupted.
     """
-    _assert_consistent_force(retract,**kw)
+    return _assert_consistent_force(retract,**kw)
 
 def assert_consistent_split_FEC(split,**kw):
     """
