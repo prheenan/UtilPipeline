@@ -25,10 +25,13 @@ def assert_consistent_split_FEC(split,**kw):
     _assert_consistent_force(split.retract,**kw)
     _assert_consistent_force(split.approach,**kw)
 
-def _assert_consistent_force(retract,rtol=1e-6,atol=1e-20):
+def _assert_consistent_force(retract,rtol=1e-6,atol=1e-20,print_info=False):
     """
     :param retract: FEC to check. should have SpringConstant, Separation,
     and Zsnsr
+    :param rtol: relative tolerance to use
+    :param atol: absolute tolerance to use
+    :param print_info: if true, prints debugging information
     :return: nothing, throws error if force != k * (q - z)
     """
     k = retract.SpringConstant
@@ -38,5 +41,10 @@ def _assert_consistent_force(retract,rtol=1e-6,atol=1e-20):
     should_be_abs_force = np.abs(k*(q-z))
     abs_force = np.abs(retract.Force)
     should_be_near_zero = np.abs(should_be_abs_force - abs_force)
+    if print_info:
+        min_e = min(should_be_near_zero)
+        max_e = max(should_be_near_zero)
+        print("Assertions.py::_assert_consistent_force. " + \
+              "Min/Max force error (N) is: {:.3g}/{:.3g}".format(min_e,max_e))
     # make sure the force is zero within a small fraction of a pN..
     np.testing.assert_allclose(should_be_near_zero,0,atol=atol,rtol=rtol)
