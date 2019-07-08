@@ -326,7 +326,8 @@ def _gallery_plots(objs,base,step,extra_before,max_gallery=_def_max_gallery):
                  f_x=lambda _x:_x.Time , x_convert=1,max_gallery=max_gallery)
 
 def _exhaustive_debug_plot(objs,base,step,f_filter=0.01,extra_before="",
-                           max_gallery=_def_max_gallery,**kw_common):
+                           max_gallery=_def_max_gallery,plot_filtered=True,
+                           **kw_common):
     """
     :param objs: list of fecs; will output filtered and unfiltered information
     :param base:  base place to save
@@ -337,7 +338,9 @@ def _exhaustive_debug_plot(objs,base,step,f_filter=0.01,extra_before="",
     :return:
     """
     _gallery_plots(objs, base, step, extra_before, max_gallery)
-    _debug_plot_data(data_retr=objs,base=base,step=step,
-                     f_filter=f_filter,extra_before="filtered_" + extra_before,
-                     **kw_common)
+    if plot_filtered:
+        _debug_plot_data(data_retr=objs,base=base,step=step,
+                         f_filter=f_filter,
+                         extra_before="filtered_" + extra_before,
+                         **kw_common)
     _debug_plot_data(data_retr=objs,base=base,step=step,**kw_common)
