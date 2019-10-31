@@ -140,7 +140,7 @@ def _heatmap_generation(data,xlim=None,ylim=None,kw_map=dict(),
     if (ax1 is None):
         ax1 = plt.subplot(2,1,1)
     plt.sca(ax1)
-    formatted_heatmap(data,num_bins = (n_bins_x, n_bins_y), x_func = f_x,
+    formatted_heatmap(data,num_bins = (n_bins_x, n_bins_y),
                       y_func = f_y, use_colorbar = False,
                       separation_max = xlim[1], force_max = ylim[1], ** kw_map)
     PlotUtilities.ylabel(ylabel)
